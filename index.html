@@ -6,12 +6,30 @@
     <title>App Lista de Cartas - Perfect Order Master Set</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #141419; color: #fff; padding: 20px; margin: 0; }
+        
+        /* PANTALLA DE LOGIN */
+        .auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #141419; z-index: 2000; display: flex; justify-content: center; align-items: center; }
+        .auth-card { background: #1f1f2a; padding: 30px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.7); border: 1px solid #2d2d3d; text-align: center; width: 100%; max-width: 360px; }
+        .auth-card h2 { margin: 0 0 20px 0; color: #ffcb05; text-shadow: 1px 1px #3b4cca; }
+        .auth-group { display: flex; flex-direction: column; text-align: left; gap: 5px; margin-bottom: 15px; }
+        .auth-group label { font-size: 0.85em; color: #ffcb05; font-weight: bold; }
+        .auth-group input { width: 100%; box-sizing: border-box; text-align: left; }
+        .auth-btn { width: 100%; padding: 12px; margin-top: 10px; background-color: #27ae60; border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer; font-size: 1em; transition: background 0.2s; }
+        .auth-btn:hover { background-color: #219653; }
+        .auth-toggle-msg { font-size: 0.85em; margin-top: 15px; color: #aaa; cursor: pointer; }
+        .auth-toggle-msg span { color: #3b4cca; font-weight: bold; }
+
+        /* HEADER Y CONTENIDOS (Ocultos inicialmente hasta el login) */
+        .app-content { display: none; }
+        
         header { text-align: center; margin-bottom: 20px; background: #1f1f2a; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); border: 1px solid #2d2d3d; position: relative; }
         h1 { margin: 0 0 10px 0; color: #ffcb05; text-shadow: 2px 2px #3b4cca; font-size: 2.2em; }
         .setup-panel { margin-bottom: 15px; }
         
-        .lang-panel { position: absolute; top: 15px; right: 15px; }
-        .lang-panel select { padding: 5px 10px; font-size: 0.9em; min-width: auto; }
+        .header-controls { position: absolute; top: 15px; right: 15px; display: flex; gap: 10px; align-items: center; }
+        .header-controls select { padding: 5px 10px; font-size: 0.9em; min-width: auto; }
+        .logout-btn { background-color: #c0392b; font-size: 0.85em; padding: 6px 12px; }
+        .logout-btn:hover { background-color: #a93226; }
 
         .filter-panel { 
             background: #1f1f2a; padding: 15px; border-radius: 12px; margin-bottom: 25px; 
@@ -22,8 +40,8 @@
         .filter-group label { font-size: 0.85em; color: #ffcb05; font-weight: bold; }
 
         input, button, select { padding: 10px; font-size: 1em; border-radius: 6px; background-color: #2d2d3d; color: white; border: 1px solid #3d3d52; }
-        input[type="text"] { width: 180px; text-align: center; }
-        input[type="text"]::placeholder { color: #777; }
+        input[type="text"], input[type="email"], input[type="password"] { width: 180px; text-align: center; }
+        input[type="text"]::placeholder, input[type="email"]::placeholder, input[type="password"]::placeholder { color: #777; }
         select { cursor: pointer; min-width: 160px; }
         
         button { background-color: #3b4cca; color: white; cursor: pointer; font-weight: bold; transition: all 0.2s; }
@@ -109,71 +127,95 @@
 </head>
 <body>
 
-    <header>
-        <div class="lang-panel">
-            <select id="lang-selector">
-                <option value="es">Español</option>
-                <option value="en">English</option>
-            </select>
-        </div>
-        <h1 id="txt-title">Master Set - Perfect Order</h1>
-        <div class="setup-panel">
-            <label for="set-id-input" id="txt-label-set">ID del Set en la API: </label>
-            <input type="text" id="set-id-input" value="sv4"> 
-            <button id="txt-btn-load">Cargar Set</button>
-        </div>
-        <div class="stats" id="stats-container">Introduce un ID de set y pulsa Cargar.</div>
-    </header>
-
-    <div class="filter-panel" id="filter-panel" style="display: none;">
-        <div class="filter-group">
-            <label for="search-input" id="txt-filter-search">Buscar</label>
-            <input type="text" id="search-input" placeholder="Nombre o Nº...">
-        </div>
-        <div class="filter-group">
-            <label for="rarity-filter" id="txt-filter-rarity">Rareza</label>
-            <select id="rarity-filter"></select>
-        </div>
-        <div class="filter-group">
-            <label for="variant-filter" id="txt-filter-variant">Filtro de Variante</label>
-            <select id="variant-filter">
-                <option value="all"></option>
-                <option value="regular"></option>
-                <option value="reverse"></option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label for="status-filter" id="txt-filter-status">Colección</label>
-            <select id="status-filter">
-                <option value="all"></option>
-                <option value="collected"></option>
-                <option value="missing"></option>
-            </select>
-        </div>
-        <div class="filter-group">
-            <label for="sort-order" id="txt-filter-sort">Ordenar por</label>
-            <select id="sort-order">
-                <option value="num-asc"></option>
-                <option value="num-desc"></option>
-                <option value="name-asc"></option>
-                <option value="name-desc"></option>
-            </select>
+    <div id="auth-panel" class="auth-overlay">
+        <div class="auth-card">
+            <h2 id="txt-auth-title">Iniciar Sesión</h2>
+            <form id="auth-form">
+                <div class="auth-group">
+                    <label for="auth-email">Correo Electrónico</label>
+                    <input type="email" id="auth-email" placeholder="ejemplo@correo.com" required>
+                </div>
+                <div class="auth-group">
+                    <label for="auth-password">Contraseña</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" minlength="6" required>
+                </div>
+                <button type="submit" id="btn-auth-submit" class="auth-btn">Ingresar</button>
+            </form>
+            <div id="auth-toggle" class="auth-toggle-msg">
+                ¿No tienes cuenta? <span id="txt-auth-toggle-action">Regístrate aquí</span>
+            </div>
         </div>
     </div>
 
-    <div id="loading-msg" class="loading" style="display: none;">Consultando la API de Pokémon TCG... por favor espera.</div>
-    <div class="grid" id="card-container"></div>
+    <div id="app-wrapper" class="app-content">
+        <header>
+            <div class="header-controls">
+                <select id="lang-selector">
+                    <option value="es">Español</option>
+                    <option value="en">English</option>
+                </select>
+                <button id="btn-logout" class="logout-btn">Salir</button>
+            </div>
+            <h1 id="txt-title">Master Set - Perfect Order</h1>
+            <div class="setup-panel">
+                <label for="set-id-input" id="txt-label-set">ID del Set en la API: </label>
+                <input type="text" id="set-id-input" value="sv4"> 
+                <button id="txt-btn-load">Cargar Set</button>
+            </div>
+            <div class="stats" id="stats-container">Introduce un ID de set y pulsa Cargar.</div>
+        </header>
 
-    <div id="preview-modal" class="modal-overlay">
-        <img id="preview-img" src="" alt="Previsualización Ampliada">
+        <div class="filter-panel" id="filter-panel" style="display: none;">
+            <div class="filter-group">
+                <label for="search-input" id="txt-filter-search">Buscar</label>
+                <input type="text" id="search-input" placeholder="Nombre o Nº...">
+            </div>
+            <div class="filter-group">
+                <label for="rarity-filter" id="txt-filter-rarity">Rareza</label>
+                <select id="rarity-filter"></select>
+            </div>
+            <div class="filter-group">
+                <label for="variant-filter" id="txt-filter-variant">Filtro de Variante</label>
+                <select id="variant-filter">
+                    <option value="all"></option>
+                    <option value="regular"></option>
+                    <option value="reverse"></option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="status-filter" id="txt-filter-status">Colección</label>
+                <select id="status-filter">
+                    <option value="all"></option>
+                    <option value="collected"></option>
+                    <option value="missing"></option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="sort-order" id="txt-filter-sort">Ordenar por</label>
+                <select id="sort-order">
+                    <option value="num-asc"></option>
+                    <option value="num-desc"></option>
+                    <option value="name-asc"></option>
+                    <option value="name-desc"></option>
+                </select>
+            </div>
+        </div>
+
+        <div id="loading-msg" class="loading" style="display: none;">Consultando la API de Pokémon TCG... por favor espera.</div>
+        <div class="grid" id="card-container"></div>
+
+        <div id="preview-modal" class="modal-overlay">
+            <img id="preview-img" src="" alt="Previsualización Ampliada">
+        </div>
     </div>
 
 <script type="module">
-        // 1. IMPORTACIÓN DE COMPONENTES DE FIREBASE (¡CORREGIDO!)
+        // 1. IMPORTACIÓN DE COMPONENTES DE FIREBASE
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
-        // Agregamos la importación de la base de datos y sus funciones:
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+        // Añadimos el módulo de autenticación
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
 
         // 2. CREDENCIALES DE TU PROYECTO
         const firebaseConfig = {
@@ -187,13 +229,15 @@
             measurementId: "G-D4798WC2GE"
         };
 
-        // Inicializamos la conexión con Firebase
+        // Inicializamos los servicios de Firebase
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
-        // Inicializamos la base de datos vinculándola con la constante 'db' que usa tu código:
         const db = getDatabase(app);
+        const auth = getAuth(app);
 
         // Variables de estado de la App
+        let currentUser = null;
+        let isLoginMode = true; 
         let currentCardsData = [];
         let collection = {};
         let currentSetId = "";
@@ -250,11 +294,11 @@
             'Promo':                     { variants: ['regular'],            badge: 'Promo',   badgeClass: 'normal',    slotClass: 'slot-regular',      tagType: null,        starCount: 0, starStyle: 'gold',   translateES: true  }
         };
 
-        // ASIGNACIÓN DE EVENTOS SEGUROS (Evita errores de onclick en módulos)
+        // ASIGNACIÓN DE EVENTOS SEGUROS
         window.onload = function() {
             updateStaticTexts();
             
-            // Asignamos los listeners directamente a los elementos HTML desde el script
+            // Listeners de la interfaz general de Cartas
             document.getElementById('lang-selector').addEventListener('change', changeLanguage);
             document.getElementById('txt-btn-load').addEventListener('click', loadSetFromAPI);
             document.getElementById('search-input').addEventListener('input', filterAndRender);
@@ -263,18 +307,91 @@
             document.getElementById('status-filter').addEventListener('change', filterAndRender);
             document.getElementById('sort-order').addEventListener('change', filterAndRender);
             document.getElementById('preview-modal').addEventListener('click', closePreview);
+            
+            // Listeners añadidos para el Control de Sesión
+            document.getElementById('auth-form').addEventListener('submit', handleAuthFormSubmit);
+            document.getElementById('auth-toggle').addEventListener('click', toggleAuthMode);
+            document.getElementById('btn-logout').addEventListener('click', handleLogout);
 
-            const savedSetId = localStorage.getItem('lastViewedSetId');
-            if (savedSetId) {
-                document.getElementById('set-id-input').value = savedSetId;
-                loadSetFromAPI();
-            }
-            updateStaticTexts();
+            // ESCUCHA DEL ESTADO DE AUTENTICACIÓN
+            onAuthStateChanged(auth, (user) => {
+                const authPanel = document.getElementById('auth-panel');
+                const appWrapper = document.getElementById('app-wrapper');
+
+                if (user) {
+                    // El usuario inició sesión correctamente
+                    currentUser = user;
+                    authPanel.style.display = 'none';
+                    appWrapper.style.display = 'block';
+
+                    // Si existía un set previo guardado, lo cargamos automáticamente
+                    const savedSetId = localStorage.getItem('lastViewedSetId');
+                    if (savedSetId) {
+                        document.getElementById('set-id-input').value = savedSetId;
+                        loadSetFromAPI();
+                    }
+                } else {
+                    // El usuario no está autenticado, reiniciamos variables y forzamos login
+                    currentUser = null;
+                    currentCardsData = [];
+                    collection = {};
+                    document.getElementById('card-container').innerHTML = '';
+                    authPanel.style.display = 'flex';
+                    appWrapper.style.display = 'none';
+                    updateStaticTexts();
+                }
+            });
         };
+
         window.changeLanguage = changeLanguage;
         window.loadSetFromAPI = loadSetFromAPI;
         window.filterAndRender = filterAndRender;
 
+        // MANEJADORES DE LOGIN Y SESIÓN
+        async function handleAuthFormSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value.trim();
+            const password = document.getElementById('auth-password').value;
+
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                    alert("¡Cuenta creada exitosamente!");
+                }
+            } catch (error) {
+                alert("Error de autenticación: " + error.message);
+            }
+        }
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            const title = document.getElementById('txt-auth-title');
+            const btnSubmit = document.getElementById('btn-auth-submit');
+            const toggleAction = document.getElementById('txt-auth-toggle-action');
+
+            if (isLoginMode) {
+                title.innerText = "Iniciar Sesión";
+                btnSubmit.innerText = "Ingresar";
+                toggleAction.innerText = "Regístrate aquí";
+            } else {
+                title.innerText = "Registrar Cuenta";
+                btnSubmit.innerText = "Crear Cuenta";
+                toggleAction.innerText = "Inicia sesión aquí";
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await signOut(auth);
+                localStorage.removeItem('lastViewedSetId');
+            } catch (error) {
+                alert("Error al cerrar sesión: " + error.message);
+            }
+        }
+
+        // LÓGICA TRADICIONAL DE LA APP (CON RUTA DE FIREBASE PROTEGIDA)
         function changeLanguage() {
             currentLang = document.getElementById('lang-selector').value;
             updateStaticTexts();
@@ -291,7 +408,6 @@
             document.getElementById('txt-btn-load').innerText = l.btnLoad;
             document.getElementById('loading-msg').innerText = l.apiMsg;
             
-            // Verificamos de forma segura que el panel de filtros exista antes de traducir sus etiquetas
             const filterPanel = document.getElementById('filter-panel');
             if (filterPanel) {
                 document.getElementById('txt-filter-search').innerText = l.filterSearch;
@@ -307,6 +423,7 @@
         }
 
         async function loadSetFromAPI() {
+            if (!currentUser) return;
             const setId = document.getElementById('set-id-input').value.trim().toLowerCase();
             if (!setId) return alert(currentLang === 'es' ? "Por favor, ingresa un ID de set válido." : "Please enter a valid set ID.");
 
@@ -333,8 +450,8 @@
 
                 currentCardsData = result.data;
 
-                // ESCUCHA EN TIEMPO REAL DESDE FIREBASE
-                const collectionRef = ref(db, `masterSet_${currentSetId}`);
+                // ESCUCHA EN TIEMPO REAL PERSONALIZADA POR ID DE USUARIO (¡MODIFICADO!)
+                const collectionRef = ref(db, `usuarios/${currentUser.uid}/masterSet_${currentSetId}`);
                 onValue(collectionRef, (snapshot) => {
                     collection = snapshot.val() || {};
 
@@ -347,6 +464,8 @@
                     populateRarityFilter();
                     filterPanel.style.display = 'flex';
                     filterAndRender(); 
+                }, (error) => {
+                    console.error("Error de Firebase:", error);
                 });
 
             } catch (error) {
@@ -501,7 +620,6 @@
                     topHtml = `<span class="variant-badge ${slot.badgeClass}">${slot.badgeText}</span>`;
                 }
 
-                // Generamos la estructura del Slot
                 slotDiv.innerHTML = `
                     <div style="min-height: 24px; margin-bottom: 6px;">${topHtml}</div>
                     <div>
@@ -519,7 +637,6 @@
                     </button>
                 `;
 
-                // Agregamos eventos interactivos dinámicamente de forma segura dentro del módulo
                 slotDiv.querySelector('.img-container').addEventListener('click', () => {
                     openPreview(slot.images.large || slot.images.small);
                 });
@@ -540,9 +657,12 @@
         }
 
         function toggleSlot(cardId, variantType) {
+            if (!currentUser) return; // Validación de seguridad en cliente
+
             if (collection[cardId]) {
                 const currentStatus = collection[cardId][variantType];
-                const slotRef = ref(db, `masterSet_${currentSetId}/${cardId}/${variantType}`);
+                // GUARDADO SEGURIZADO: Ruta específica bajo el ID del usuario actual (¡MODIFICADO!)
+                const slotRef = ref(db, `usuarios/${currentUser.uid}/masterSet_${currentSetId}/${cardId}/${variantType}`);
                 set(slotRef, !currentStatus);
             }
         }
