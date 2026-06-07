@@ -205,8 +205,8 @@
         .slot-gold-range.collected { border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); background: linear-gradient(145deg, #7a6229 0%, #b8953d 100%); }
 
         .high-rarity-tag { display: inline-flex; background: rgba(0, 0, 0, 0.8); padding: 4px 8px; border-radius: 6px; font-size: 0.75em; font-weight: bold; color: #fff; align-items: center; gap: 6px; border: 1px solid #d4af37; box-shadow: 0 2px 6px rgba(0,0,0,0.6); max-width: 90%; margin: 0 auto; white-space: nowrap; }
-        .gold-star   { color: #ffd700; text-shadow: 0 0 5px rgba(255, 215, 0, 0.9); font-size: 1.1em; line-height: 1; margin-right: -2px; }
-        .silver-star { color: #c8d8e8; text-shadow: 0 0 5px rgba(180, 210, 240, 0.9); font-size: 1.1em; line-height: 1; margin-right: -2px; }
+        .gold-star   { color: #ffd700; text-shadow: 0 0 5px rgba(255, 215, 0, 0.9); font-size: 1.1em; line-height: 1; display: inline-block; }
+        .silver-star { color: #c8d8e8; text-shadow: 0 0 5px rgba(180, 210, 240, 0.9); font-size: 1.1em; line-height: 1; display: inline-block; }
         
         .rainbow-star { 
             background: linear-gradient(135deg, #ff7675, #ffeaa7, #55efc4, #74b9ff, #a29bfe);
@@ -216,7 +216,6 @@
             filter: drop-shadow(0 0 2px rgba(255,255,255,0.5));
             font-size: 1.1em; 
             line-height: 1;
-            margin-right: -2px;
             display: inline-block;
             animation: rainbowShift 4s ease infinite;
         }
@@ -226,7 +225,12 @@
             100% { background-position: 0% 50%; }
         }
 
-        .stars-container-inner { display: inline-flex; align-items: center; }
+        /* NUEVO: Contenedor con leve margen lateral y soporte para desfasaje en cascada */
+        .stars-container-inner { display: inline-flex; align-items: center; gap: 1px; margin-right: 2px; }
+        
+        /* NUEVO: Modificadores dinámicos para simular la alineación diagonal oficial TCG (escalonado hacia arriba o abajo) */
+        .stars-container-inner span:nth-child(2) { transform: translateY(-2px); }
+        .stars-container-inner span:nth-child(3) { transform: translateY(-4px); }
         
         .card-info { margin: 5px 0 10px 0; font-size: 0.85em; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         .card-name { font-weight: bold; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; }
@@ -629,8 +633,8 @@
             const savedSelectedRarity = rarityFilter.value || "all";
             rarityFilter.innerHTML = `<option value="all">${l.allRarities}</option>`;
 
-            const rarityOrderES = ['Común', 'Poco Común', 'Rara', 'Rara Holo', 'Doble Rara', 'Ultra Rare', 'Illustration Rare', 'Special Illustration Rare', 'Hyper Rare', 'Mega Hyper Rare', 'Rare Rainbow', 'Rare Holo VSTAR', 'Rare Holo V'];
-            const rarityOrderEN = ['Common', 'Uncommon', 'Rare', 'Rare Holo', 'Double Rare', 'Ultra Rare', 'Illustration Rare', 'Special Illustration Rare', 'Hyper Rare', 'Mega Hyper Rare', 'Rare Rainbow', 'Rare Holo VSTAR', 'Rare Holo V'];
+            const rarityOrderES = ['Común', 'Poco Común', 'Rara', 'Rara Holo', 'Doble Rara', 'Ultra Rare', 'Illustration Rare', 'Special Illustration Rare', 'Hyper Rare', 'Mega Hyper Rare', 'Rare Secret', 'Rare Ultra', 'Rare Rainbow', 'Rare Holo VSTAR', 'Rare Holo V'];
+            const rarityOrderEN = ['Common', 'Uncommon', 'Rare', 'Rare Holo', 'Double Rare', 'Ultra Rare', 'Illustration Rare', 'Special Illustration Rare', 'Hyper Rare', 'Mega Hyper Rare', 'Rare Secret', 'Rare Ultra', 'Rare Rainbow', 'Rare Holo VSTAR', 'Rare Holo V'];
             const fixedOrder = currentLang === 'es' ? rarityOrderES : rarityOrderEN;
 
             const presentRarities = new Set(currentCardsData.map(card => {
@@ -773,7 +777,6 @@
                     if (slot.starStyle === 'silver') starClass = 'silver-star';
                     if (slot.starStyle === 'rainbow') starClass = 'rainbow-star';
 
-                    // CORREGIDO: Bucle dinámico basado en slot.starCount para imprimir múltiples estrellas consecutivas
                     let totalStarsHtml = '';
                     const count = slot.starCount || 1;
                     for (let i = 0; i < count; i++) {
