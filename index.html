@@ -207,6 +207,21 @@
         .high-rarity-tag { background: rgba(0, 0, 0, 0.8); padding: 4px 8px; border-radius: 6px; font-size: 0.75em; font-weight: bold; color: #fff; display: inline-flex; align-items: center; gap: 4px; border: 1px solid #d4af37; box-shadow: 0 2px 6px rgba(0,0,0,0.6); }
         .gold-star   { color: #ffd700; text-shadow: 0 0 5px rgba(255, 215, 0, 0.9); font-size: 1.1em; line-height: 1; }
         .silver-star { color: #c8d8e8; text-shadow: 0 0 5px rgba(180, 210, 240, 0.9); font-size: 1.1em; line-height: 1; }
+        .rainbow-star { 
+            background: linear-gradient(135deg, #ff7675, #ffeaa7, #55efc4, #74b9ff, #a29bfe);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 2px rgba(255,255,255,0.5));
+            font-size: 1.1em; 
+            line-height: 1;
+            animation: rainbowShift 4s ease infinite;
+        }
+        @keyframes rainbowShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
 
         .stars-wrap { position: relative; display: inline-block; vertical-align: middle; }
         .stars-wrap.double { width: 22px; height: 17px; }
@@ -379,7 +394,8 @@
 
         const rarityMap = {
             'Common': 'Común', 'Uncommon': 'Poco Común', 'Rare': 'Rara', 'Rare Holo': 'Rara Holo',
-            'Double Rare': 'Doble Rara', 'Promo': 'Promocional'
+            'Double Rare': 'Doble Rara', 'Promo': 'Promocional',
+            'Rare Rainbow': 'Rara Arcoiris', 'Rare Holo VSTAR': 'Holo VSTAR Rara', 'Rare Holo V': 'Holo V Rara'
         };
 
         const rarityVisualMap = {
@@ -397,7 +413,11 @@
             'Rare Ultra':                { variants: ['full-art'],           badge: '★★',     badgeClass: 'full-art',  slotClass: 'slot-purple-range', tagType: 'gold-star', starCount: 2, starStyle: 'silver', translateES: true  },
             'Rare Shiny':                { variants: ['full-art'],           badge: '✦',      badgeClass: 'full-art',  slotClass: 'slot-purple-range', tagType: 'gold-star', starCount: 1, starStyle: 'gold',   translateES: false },
             'Rare Shiny GX':             { variants: ['full-art'],           badge: '✦✦',     badgeClass: 'full-art',  slotClass: 'slot-purple-range', tagType: 'gold-star', starCount: 2, starStyle: 'gold',   translateES: false },
-            'Promo':                     { variants: ['regular'],            badge: 'Promo',   badgeClass: 'normal',    slotClass: 'slot-regular',      tagType: null,        starCount: 0, starStyle: 'gold',   translateES: true  }
+            'Promo':                     { variants: ['regular'],            badge: 'Promo',   badgeClass: 'normal',    slotClass: 'slot-regular',      tagType: null,        starCount: 0, starStyle: 'gold',   translateES: true  },
+            'Rare Rainbow':              { variants: ['full-art'],           badge: '★',      badgeClass: 'full-art',  slotClass: 'slot-gold-range',   tagType: 'gold-star', starCount: 1, starStyle: 'rainbow', translateES: true },
+            'Rare Holo VSTAR':           { variants: ['full-art'],           badge: '★',      badgeClass: 'full-art',  slotClass: 'slot-purple-range', tagType: 'gold-star', starCount: 1, starStyle: 'silver',  translateES: true },
+            'Middle Rare':               { variants: ['full-art'],           badge: '★',      badgeClass: 'full-art',  slotClass: 'slot-purple-range', tagType: 'gold-star', starCount: 1, starStyle: 'silver',  translateES: true },
+            'Rare Holo V':               { variants: ['full-art'],           badge: '★',      badgeClass: 'full-art',  slotClass: 'slot-purple-range', tagType: 'gold-star', starCount: 1, starStyle: 'silver',  translateES: true }
         };
 
         window.onload = function() {
@@ -751,7 +771,9 @@
                 let topHtml = '';
 
                 if (slot.tagType === 'gold-star') {
-                    const starClass = slot.starStyle === 'silver' ? 'silver-star' : 'gold-star';
+                    let starClass = 'gold-star';
+                    if (slot.starStyle === 'silver') starClass = 'silver-star';
+                    if (slot.starStyle === 'rainbow') starClass = 'rainbow-star';
                     let starsHtml = `<span class="${starClass}">★</span>`;
                     if (slot.starCount > 1) {
                         starsHtml = `<div class="stars-wrap ${slot.starCount === 2 ? 'double' : 'triple'}">` + 
