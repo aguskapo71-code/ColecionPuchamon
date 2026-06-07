@@ -166,10 +166,12 @@
         }
         .card-slot:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.8); }
         
+        /* CONTENEDOR DE LA IMAGEN: Ahora es relativo para permitir posicionar las estrellas sobre él */
         .img-container { 
             position: relative; background: #141419; border-radius: 6px; aspect-ratio: 245/342; 
             display: flex; align-items: center; justify-content: center; margin-bottom: 8px; cursor: pointer;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            overflow: hidden;
         }
         .img-container:hover { transform: scale(1.03); box-shadow: 0 0 15px rgba(255, 255, 255, 0.15); z-index: 2; }
         
@@ -204,38 +206,24 @@
         .slot-gold-range { border-color: #5c4a1f; background: #362b13; }
         .slot-gold-range.collected { border-color: #ffd700; box-shadow: 0 0 15px rgba(255, 215, 0, 0.6); background: linear-gradient(145deg, #7a6229 0%, #b8953d 100%); }
 
-        /* CORREGIDO: Rediseño del contenedor para ajustar textos largos sin desbordes */
-        .high-rarity-tag { 
-            display: flex; 
-            background: rgba(0, 0, 0, 0.8); 
-            padding: 4px 6px; 
-            border-radius: 6px; 
-            font-size: 0.75em; 
-            font-weight: bold; 
-            color: #fff; 
+        /* ESTRELLAS ESTILO TCG ORIGINAL (IMAGEN IZQUIERDA): Flotan sobre la esquina inferior izquierda de la carta */
+        .stars-container-inner { 
+            position: absolute;
+            left: 8px;
+            bottom: 8px;
+            display: inline-flex; 
             align-items: center; 
-            justify-content: center; 
-            gap: 4px; 
-            border: 1px solid #d4af37; 
-            box-shadow: 0 2px 6px rgba(0,0,0,0.6); 
-            width: 100%; 
-            max-width: 145px; 
-            margin: 0 auto; 
-            box-sizing: border-box; 
+            gap: 1px; 
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 2px 4px;
+            border-radius: 4px;
+            pointer-events: none;
         }
-
-        /* CORREGIDO: Clase helper para ajustar sutilmente la fuente ante textos muy extensos */
-        .high-rarity-tag.long-text {
-            font-size: 0.68em;
-            padding: 5px 4px;
-        }
-
-        /* CORREGIDO: Aseguramos que el texto respete su flujo interno sin saltos de línea forzados */
-        .high-rarity-tag span:last-child {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        
+        /* Efecto escalonado diagonal de las estrellas oficiales */
+        .stars-container-inner span:nth-child(2) { transform: translateY(-2px); }
+        .stars-container-inner span:nth-child(3) { transform: translateY(-4px); }
 
         .gold-star   { color: #ffd700; text-shadow: 0 0 5px rgba(255, 215, 0, 0.9); font-size: 1.1em; line-height: 1; display: inline-block; }
         .silver-star { color: #c8d8e8; text-shadow: 0 0 5px rgba(180, 210, 240, 0.9); font-size: 1.1em; line-height: 1; display: inline-block; }
@@ -256,18 +244,22 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-
-        /* Contenedor con leve margen lateral y soporte para desfasaje en cascada */
-        .stars-container-inner { display: inline-flex; align-items: center; gap: 1px; margin-right: 2px; flex-shrink: 0; }
-        
-        /* Modificadores dinámicos para simular la alineación diagonal oficial TCG (escalonado hacia arriba o abajo) */
-        .stars-container-inner span:nth-child(2) { transform: translateY(-2px); }
-        .stars-container-inner span:nth-child(3) { transform: translateY(-4px); }
         
         .card-info { margin: 5px 0 10px 0; font-size: 0.85em; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         .card-name { font-weight: bold; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #fff; }
         .card-number { color: #aaa; font-size: 0.85em; display: block; margin-top: 2px; }
-        .card-rarity { color: #ffcb05; font-size: 0.75em; font-style: italic; display: block; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        
+        /* DISEÑO DE TEXTO DE RAREZA (IMAGEN IZQUIERDA): Texto limpio y legible abajo */
+        .card-rarity { 
+            color: #ffcb05; 
+            font-size: 0.8em; 
+            font-weight: 500;
+            display: block; 
+            margin-top: 4px; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            white-space: nowrap; 
+        }
         
         .action-button { width: 100%; padding: 8px; font-size: 0.85em; font-weight: bold; border-radius: 5px; cursor: pointer; transition: all 0.2s; background: #2d2d3d; color: #aaa; border: 1px solid #3d3d52; }
         .card-slot.collected .action-button { background: #27ae60; color: white; border-color: #2ecc71; }
@@ -802,37 +794,37 @@
                 const slotDiv = document.createElement('div');
                 slotDiv.className = `card-slot ${slot.slotClass} ${slot.isCollected ? 'collected' : ''}`;
 
-                let topHtml = '';
+                let topLabelHtml = '';
+                let floatingStarsHtml = '';
 
+                // SI ES ALTA RAREZA (Gold / Silver / Rainbow Stars)
                 if (slot.tagType === 'gold-star') {
                     let starClass = 'gold-star';
                     if (slot.starStyle === 'silver') starClass = 'silver-star';
                     if (slot.starStyle === 'rainbow') starClass = 'rainbow-star';
 
-                    let totalStarsHtml = '';
+                    let totalStars = '';
                     const count = slot.starCount || 1;
                     for (let i = 0; i < count; i++) {
-                        totalStarsHtml += `<span class="${starClass}">★</span>`;
+                        totalStars += `<span class="${starClass}">★</span>`;
                     }
 
-                    // CORREGIDO: Se añade condicionalmente la clase 'long-text' si la longitud de la rareza excede los 18 caracteres
-                    const isLongTextClass = slot.displayRarity.length > 18 ? ' long-text' : '';
-
-                    topHtml = `
-                        <div class="high-rarity-tag${isLongTextClass}">
-                            <span class="stars-container-inner">${totalStarsHtml}</span>
-                            <span>${slot.displayRarity}</span>
-                        </div>
-                    `;
+                    // Las estrellas flotan sobre la imagen
+                    floatingStarsHtml = `<div class="stars-container-inner">${totalStars}</div>`;
+                    topLabelHtml = `<span class="variant-badge normal" style="visibility: hidden;">Placeholder</span>`; // Mantiene la simetría de altura
                 } else {
-                    topHtml = `<span class="variant-badge ${slot.badgeClass}">${slot.badgeText}</span>`;
+                    // Si es regular, usa su badge normal arriba (Holo, Ex, Reverse, etc)
+                    topLabelHtml = `<span class="variant-badge ${slot.badgeClass}">${slot.badgeText}</span>`;
                 }
 
                 slotDiv.innerHTML = `
-                    <div style="min-height: 24px; margin-bottom: 6px; display: flex; justify-content: center; width: 100%; box-sizing: border-box;">${topHtml}</div>
+                    <div style="min-height: 24px; margin-bottom: 6px; display: flex; justify-content: center; width: 100%; box-sizing: border-box;">
+                        ${topLabelHtml}
+                    </div>
                     <div>
                         <div class="img-container" title="${currentLang === 'es' ? 'Ampliar' : 'Enlarge'}">
                             <img src="${slot.images.small}" alt="${slot.name}" loading="lazy">
+                            ${floatingStarsHtml}
                         </div>
                         <div class="card-info">
                             <span class="card-name" title="${slot.name}">${slot.name}</span>
