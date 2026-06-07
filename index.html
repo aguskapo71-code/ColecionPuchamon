@@ -411,29 +411,37 @@
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-analytics.js";
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+        
         // CONFIGURACIÓN DE TU PROYECTO FIREBASE
         const firebaseConfig = {
-            apiKey: "AIzaSyAsB...", // Tu API Key real
-            authDomain: "tu-proyecto.firebaseapp.com",
-            databaseURL: "https://tu-proyecto-default-rtdb.firebaseio.com",
-            projectId: "tu-proyecto",
-            storageBucket: "tu-proyecto.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:1234:web:abcd"
+            apiKey: "AIzaSyAUTKnWjDW3GjrkW16lrr6Ld0_IdCLM_K8",
+            authDomain: "guia-coleccion-pokemon.firebaseapp.com",
+            databaseURL: "https://guia-coleccion-pokemon-default-rtdb.firebaseio.com",
+            projectId: "guia-coleccion-pokemon",
+            storageBucket: "guia-coleccion-pokemon.firebasestorage.app",
+            messagingSenderId: "975098861721",
+            appId: "1:975098861721:web:194e589302c1ff274b0008",
+            measurementId: "G-D4798WC2GE"
         };
 
         // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        const analytics = getAnalytics(app);
         const db = getDatabase(app);
+        const auth = getAuth(app);
 
         // Variables de Control Global del script de Firebase
-        let isLoginMode = true;
-        let unsubscribeDatabase = null;
+        let currentUser = null;
+        let isLoginMode = true; 
+        let currentCardsData = [];
+        let collection = {};
+        let currentSetId = "";
+        let currentLang = "es";
+        let isMasterSetMode = true;
 
         // Exponer funciones críticas globalmente para que funcionen con los atributos onClick nativos de tu HTML
         window.logoutUser = function() {
